@@ -16,8 +16,8 @@ jobs:
           version: 9.15.2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: pnpm
       - name: Install dependencies
         run: pnpm install
       - name: Build
@@ -31,22 +31,12 @@ jobs:
           SHORT_HASH=$(git rev-parse --short HEAD)
           echo "version=v${VERSION}" >> $GITHUB_OUTPUT
           echo "release_name=v${VERSION}-${SHORT_HASH}" >> $GITHUB_OUTPUT
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release
+        uses: svenstaro/upload-release-action@v2
         with:
-          tag_name: ${{ steps.version.outputs.version }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./recline-*.vsix
+          file_glob: true
+          tag: ${{ steps.version.outputs.version }}
           release_name: ${{ steps.version.outputs.release_name }}
-          draft: false
-          prerelease: false
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./recline-*.vsix
-          asset_name: recline-${{ steps.version.outputs.version }}.vsix
-          asset_content_type: application/vsix
+          overwrite: true
